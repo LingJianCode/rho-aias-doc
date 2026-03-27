@@ -4,6 +4,16 @@ export default defineConfig({
   title: 'rho-aias',
   description: '基于 eBPF/XDP 的高性能网络防火墙系统',
 
+  vite: {
+    server: {
+      host: '0.0.0.0',
+      port: 3000,
+      allowedHosts: [
+        '.cnb.run'
+      ]
+    }
+  },
+
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     ['meta', { name: 'theme-color', content: '#0f0f1a' }],
