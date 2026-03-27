@@ -69,7 +69,7 @@ export default defineConfig({
 
     footer: {
       message: '基于 eBPF/XDP 技术构建',
-      copyright: '© 2025 rho-aias Contributors'
+      copyright: '© 2026 rho-aias Contributors'
     },
 
     search: {
