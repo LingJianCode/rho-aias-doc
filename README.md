@@ -57,6 +57,7 @@ npm run build    # 构建
 npm run preview  # 预览构建结果
 ```
 
-### 说明
+### 最小的http server镜像
 
-[docker-static-website]https://github.com/lipanski/docker-static-website
+> 感谢[龙哥](https://cnb.cool/znb)🙏 
+[docker-static-website](https://github.com/lipanski/docker-static-website)
