@@ -1,0 +1,9 @@
+services:
+  doc:
+    image: docker.cnb.cool/makecnbgreatagain/rho-aias-doc:latest
+    container_name: doc
+    ports:
+      - 3000:3000
+    environment:
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
