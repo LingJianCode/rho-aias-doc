@@ -1,0 +1,22 @@
+$:
+  vscode:
+    - docker:
+        image: docker.cnb.cool/lingjiancode/images/debian:all
+      runner:
+        cpus: 16
+      services:
+        - vscode
+        - docker
+      env:
+        HISTFILE: "/root/.cnb/system/zsh_history"
+      stages:
+        - name: start
+          timeout: 1h
+          script: |
+            current_time=$(date +%s)
+            find /workspace/letsfly -mindepth 1 -maxdepth 2 -type d | while read dir
+            do
+              echo "$dir|1000|$current_time"
+            done >> /root/.z
+            # default keep live 36000s
+            for i in `seq 5760`;do echo $i && date && sleep 10;done
