@@ -39,7 +39,6 @@ server:
 # eBPF/XDP 配置
 xdp:
   interface: "eth0"      # 绑定的网卡
-  mode: "native"          # XDP 模式: native, skb, hw
 
 # 认证配置
 auth:
