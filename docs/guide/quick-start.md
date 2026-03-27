@@ -6,9 +6,9 @@
 
 | 项目 | 最低要求 |
 |------|---------|
-| 操作系统 | Linux Kernel 5.4+（推荐 5.10+） |
-| Go 版本 | 1.21+ |
-| eBPF 工具 | clang, llvm, libbpf |
+| 操作系统 | Linux Kernel 5.4+（推荐 6.1） |
+| Docker | 20.10+ |
+| Docker Compose | v2.0+ |
 | 硬件 | 支持 XDP 的网卡 |
 
 ## 安装步骤
@@ -20,24 +20,7 @@ git clone https://cnb.cool/MakeCNBGreatAgain/rho-aias.git
 cd rho-aias
 ```
 
-### 2. 编译 eBPF 程序
-
-```bash
-# 安装依赖
-make deps
-
-# 编译 eBPF 内核程序
-make xdp
-```
-
-### 3. 编译管理程序
-
-```bash
-# 编译 rho-aias manager
-make build
-```
-
-### 4. 配置
+### 2. 创建配置文件
 
 复制并编辑配置文件：
 
@@ -65,14 +48,71 @@ auth:
     - "your-api-key"
 ```
 
-### 5. 运行
+### 3. 创建 Docker Compose 文件
+
+创建 `docker-compose.yml` 文件：
+
+```yaml
+services:
+  caddy:
+    image: docker.cnb.cool/makecnbgreatagain/rho-aias/rho-aias-caddy:latest
+    container_name: caddy
+    environment:
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+    network_mode: host
+    user: root
+
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+
+    security_opt:
+      - no-new-privileges:true
+
+
+    tmpfs:
+      - /tmp
+
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/config:/root/.config
+      - ./caddy/data:/root/.local/share/caddy
+      - ./logs/caddy:/logs
+
+  rho-aias:
+    image: docker.cnb.cool/makecnbgreatagain/rho-aias/rho-aias:latest
+    container_name: rho-aias
+    environment:
+      - TZ=Asia/Shanghai
+    privileged: false
+    cap_drop:
+      - ALL
+    cap_add:
+      - CAP_BPF
+      - CAP_PERFMON
+      - CAP_NET_ADMIN
+      - CAP_NET_RAW
+    network_mode: host
+    volumes:
+      - ./config.yml:/app/config/config.yml:ro
+      - ./logs/rho-aias:/app/logs
+      - ./data:/app/data
+      - ./logs/caddy:/caddy-logs:ro
+    command: ["--config", "/app/config/config.yml"]
+    restart: unless-stopped
+```
+
+### 4. 启动服务
 
 ```bash
 # 启动服务
-sudo ./rho-aias -config config.yaml
-```
+docker compose up -d
 
-服务启动后，你可以通过 API 或 CLI 进行规则管理。
+# 查看日志
+docker compose logs -f
+```
 
 ## 验证安装
 
