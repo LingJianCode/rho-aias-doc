@@ -1,11 +1,17 @@
-import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 
-export default defineConfig({
+export default withMermaid({
   title: 'rho-aias',
   description: '基于 eBPF/XDP 的高性能网络防火墙系统',
 
   // 允许主题切换
   appearance: true,
+
+  // Mermaid 配置
+  mermaid: {
+    startOnLoad: true,
+    theme: 'default'
+  },
 
   vite: {
     server: {
