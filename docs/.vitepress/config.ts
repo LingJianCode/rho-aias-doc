@@ -4,8 +4,8 @@ export default withMermaid({
   title: 'rho-aias',
   description: '基于 eBPF/XDP 的高性能网络防火墙系统',
 
-  // 允许主题切换
-  appearance: true,
+  // 允许主题切换,默认深色模式
+  appearance: 'dark',
 
   // Mermaid 配置
   mermaid: {
