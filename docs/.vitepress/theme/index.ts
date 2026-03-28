@@ -1,72 +1,97 @@
 import DefaultTheme from 'vitepress/theme'
+import { onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
+import { useRoute } from 'vitepress'
 import './style.css'
 
-export default DefaultTheme
-
 // Hero 区域彗星扫描线和红色亮点效果
-if (typeof window !== 'undefined') {
-  let initialized = false
-  let container: HTMLDivElement | null = null
+let initialized = false
+let container: HTMLDivElement | null = null
+let sparkTimers: ReturnType<typeof setTimeout>[] = []
 
-  function createCometEffect(hero: Element) {
-    // 清理旧效果
-    document.querySelectorAll('.hero-comet-container').forEach(el => el.remove())
+function cleanup() {
+  // 清理所有定时器
+  sparkTimers.forEach(t => clearTimeout(t))
+  sparkTimers = []
+  // 清理 DOM
+  document.querySelectorAll('.hero-comet-container').forEach(el => el.remove())
+  container = null
+  initialized = false
+}
 
-    // 创建容器
-    container = document.createElement('div')
-    container.className = 'hero-comet-container'
-    hero.appendChild(container)
+function createCometEffect(hero: Element) {
+  // 清理旧效果
+  cleanup()
 
-    // 创建彗星（只有一条渐变线）
-    const comet = document.createElement('div')
-    comet.className = 'hero-comet'
-    container.appendChild(comet)
+  // 创建容器
+  container = document.createElement('div')
+  container.className = 'hero-comet-container'
+  hero.appendChild(container)
 
-    initialized = true
+  // 创建彗星（只有一条渐变线）
+  const comet = document.createElement('div')
+  comet.className = 'hero-comet'
+  container.appendChild(comet)
 
-    // 启动亮点生成
-    scheduleSparks()
+  initialized = true
+
+  // 启动亮点生成
+  scheduleSparks()
+}
+
+function scheduleSparks() {
+  // 每轮生成 5-10 个亮点
+  const sparkCount = 5 + Math.floor(Math.random() * 6)
+
+  for (let i = 0; i < sparkCount; i++) {
+    const timer = setTimeout(() => {
+      createSpark()
+    }, Math.random() * 5000)
+    sparkTimers.push(timer)
   }
 
-  function scheduleSparks() {
-    // 每轮生成 5-10 个亮点
-    const sparkCount = 5 + Math.floor(Math.random() * 6)
+  // 每 5 秒一轮
+  const nextTimer = setTimeout(scheduleSparks, 5000)
+  sparkTimers.push(nextTimer)
+}
 
-    for (let i = 0; i < sparkCount; i++) {
-      setTimeout(() => {
-        createSpark()
-      }, Math.random() * 5000)
-    }
+function createSpark() {
+  if (!container) return
 
-    // 每 5 秒一轮
-    setTimeout(scheduleSparks, 5000)
+  const spark = document.createElement('div')
+  spark.className = 'hero-spark'
+  spark.style.left = `${Math.random() * 100}%`
+  spark.style.top = `${Math.random() * 100}%`
+  container.appendChild(spark)
+
+  // 1.2秒后移除
+  setTimeout(() => spark.remove(), 1200)
+}
+
+function initCometEffect() {
+  const hero = document.querySelector('.VPHero')
+  if (hero) {
+    createCometEffect(hero)
   }
+}
 
-  function createSpark() {
-    if (!container) return
+export default {
+  extends: DefaultTheme,
+  setup() {
+    const route = useRoute()
 
-    const spark = document.createElement('div')
-    spark.className = 'hero-spark'
-    spark.style.left = `${Math.random() * 100}%`
-    spark.style.top = `${Math.random() * 100}%`
-    container.appendChild(spark)
+    onMounted(() => {
+      // 使用 nextTick 确保 Vue 渲染完成后再初始化
+      nextTick(() => initCometEffect())
+    })
 
-    // 1.2秒后移除
-    setTimeout(() => spark.remove(), 1200)
+    // 监听路由变化，SPA 导航时重新初始化
+    watch(() => route.path, () => {
+      nextTick(() => initCometEffect())
+    })
+
+    // 组件卸载时清理资源
+    onBeforeUnmount(() => {
+      cleanup()
+    })
   }
-
-  function init() {
-    const hero = document.querySelector('.VPHero')
-    if (hero && !initialized) {
-      createCometEffect(hero)
-    }
-  }
-
-  window.addEventListener('load', init)
-
-  window.addEventListener('hashchange', () => {
-    initialized = false
-    document.querySelectorAll('.hero-comet-container').forEach(el => el.remove())
-    setTimeout(init, 100)
-  })
 }
