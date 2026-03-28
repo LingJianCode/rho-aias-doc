@@ -31,59 +31,96 @@ rho-aias 使用 **3σ（三倍标准差）** 统计方法建立流量基线，�
 
 | 攻击类型 | 检测方式 | 说明 |
 |---------|---------|------|
-| SYN Flood | SYN 包速率 | 大量半开连接耗尽服务器资源 |
-| UDP Flood | UDP 包速率 | 大量 UDP 包淹没带宽 |
-| ICMP Flood | ICMP 包速率 | 利用 ICMP 协议进行流量攻击 |
-| ACK Flood | ACK 包速率 | 发送大量 ACK 包干扰连接 |
+| SYN Flood | SYN 包占比 | 大量半开连接耗尽服务器资源 |
+| UDP Flood | UDP 包占比 | 大量 UDP 包淹没带宽 |
+| ICMP Flood | ICMP 包占比 | 利用 ICMP 协议进行流量攻击 |
+| ACK Flood | ACK 包占比 | 发送大量 ACK 包干扰连接 |
 
 ## 配置
 
-在 `config.yaml` 中配置 DDoS 检测：
+在 `config.yml` 中配置异常检测：
 
 ```yaml
-ddos:
-  enabled: true
+anomaly_detection:
+  enabled: true                    # 总开关
 
-  # 基线配置
+  # 采样配置
+  sample_rate: 1                    # 采样率（1=100%，100=1%）
+
+  # 检测配置
+  check_interval: 1                 # 检测间隔（秒）
+  min_packets: 50                   # 最小包数（少于此值不检测）
+  cleanup_interval: 300             # 清理过期数据间隔（秒）
+
+  # 封禁配置
+  block_duration: 60                # 临时封禁时长（秒）
+
+  # 端口过滤配置（仅对指定端口进行异常检测，为空则检测所有端口）
+  ports:
+    - 80
+    - 443
+    - 8080
+    - 53
+
+  # 3σ 基线配置
   baseline:
-    window: 60            # 滑动窗口大小（秒）
-    history: 300          # 历史数据保留时间（秒）
-    sigma_factor: 3       # σ 倍数（默认 3）
+    min_sample_count: 10            # 最小样本数
+    sigma_multiplier: 3.0           # σ 倍数（默认 3）
+    min_threshold: 100              # 最小 PPS 阈值
+    max_age: 1800                   # 基线最大年龄（秒）
 
   # 攻击类型检测
   attacks:
     syn_flood:
       enabled: true
-      threshold: 10000    # 静态阈值（PPS），超过则直接触发
-      auto_ban: true      # 是否自动封禁
-      ban_duration: 600   # 自动封禁时长（秒）
+      ratio_threshold: 0.5          # SYN 包占比阈值（50%）
+      min_packets: 100              # 触发检测的最小包数
+      block_duration: 60            # 封禁时长（秒）
     udp_flood:
       enabled: true
-      threshold: 50000
-      auto_ban: true
-      ban_duration: 600
+      ratio_threshold: 0.8          # UDP 包占比阈值（80%）
+      min_packets: 100
+      block_duration: 60
     icmp_flood:
       enabled: true
-      threshold: 5000
-      auto_ban: true
-      ban_duration: 600
+      ratio_threshold: 0.5          # ICMP 包占比阈值（50%）
+      min_packets: 100
+      block_duration: 60
     ack_flood:
       enabled: true
-      threshold: 8000
-      auto_ban: true
-      ban_duration: 600
+      ratio_threshold: 0.8          # ACK 包占比阈值（80%）
+      min_packets: 100
+      block_duration: 60
 ```
 
 ### 参数说明
 
-| 参数 | 说明 | 推荐值 |
+| 参数 | 说明 | 默认值 |
 |------|------|--------|
-| `baseline.window` | 滑动窗口大小，用于计算实时流量 | 60 秒 |
-| `baseline.history` | 历史数据保留时长，用于计算基线 | 300 秒 |
-| `baseline.sigma_factor` | σ 倍数，越高越宽松 | 3 |
-| `attacks.*.threshold` | 静态阈值（PPS），超过直接触发告警 | 视业务而定 |
-| `attacks.*.auto_ban` | 是否自动封禁攻击源 IP | 按需开启 |
-| `attacks.*.ban_duration` | 自动封禁时长 | 600 秒 |
+| `sample_rate` | 采样率，1 表示 100% 采样 | `1` |
+| `check_interval` | 检测间隔（秒） | `1` |
+| `min_packets` | 最小包数阈值 | `50` |
+| `cleanup_interval` | 清理间隔（秒） | `300` |
+| `block_duration` | 临时封禁时长（秒） | `60` |
+| `ports` | 检测端口列表（空则全部） | `[]` |
+
+### 基线配置说明
+
+| 参数 | 说明 | 默认值 |
+|------|------|--------|
+| `min_sample_count` | 建立基线的最小样本数 | `10` |
+| `sigma_multiplier` | σ 倍数，越高越宽松 | `3.0` |
+| `min_threshold` | 最小 PPS 阈值，保护低流量 IP | `100` |
+| `max_age` | 基线最大年龄（秒），过期后重建 | `1800` |
+
+### 攻击类型配置说明
+
+| 参数 | 说明 |
+|------|------|
+| `enabled` | 是否启用此类型检测 |
+| `ratio_threshold` | 协议包占比阈值（0.0-1.0） |
+| `min_packets` | 触发检测的最小包数 |
+| `block_duration` | 封禁时长（秒） |
 
 ## 工作流程
 
@@ -92,89 +129,141 @@ ddos:
       │
       ▼
 ┌─────────────┐
-│  包分类计数   │ ── 按 SYN/UDP/ICMP/ACK 分类统计
+│  包分类计数  │ ── 按 SYN/UDP/ICMP/ACK 分类统计
 └──────┬──────┘
        │
        ▼
 ┌─────────────┐
-│  滑动窗口    │ ── 计算 window 内的各类包速率
+│  滑动窗口   │ ── 计算窗口内的各类包速率
 └──────┬──────┘
        │
        ▼
 ┌─────────────────────┐     超过阈值
-│  异常判断            │ ─────────────────▶ ┌──────────┐
-│  (阈值 + 3σ 基线)    │                    │ 触发告警  │
+│  异常判断           │ ─────────────────▶ ┌──────────┐
+│  (协议占比 + 3σ)    │                    │ 触发封禁  │
 └─────────────────────┘                    └────┬─────┘
-       │ 正常                                   │
-       ▼                                  auto_ban?
-┌─────────────┐                              │
-│  更新基线    │◀────────── 是 ──────────────┘
+       │ 正常                                  │
+       ▼                                  记录数据库
+┌─────────────┐
+│  更新基线   │
 └─────────────┘
        │
        ▼
   继续监控
 ```
 
-## 查看 DDoS 检测状态
+## 检测逻辑
 
-### 获取当前状态
+### 协议占比检测
+
+对于每种攻击类型，系统计算该协议包占总包数的比例：
+
+```
+SYN 占比 = SYN 包数 / 总 TCP 包数
+UDP 占比 = UDP 包数 / 总包数
+ICMP 占比 = ICMP 包数 / 总包数
+ACK 占比 = ACK 包数 / 总 TCP 包数
+```
+
+当占比超过 `ratio_threshold` 时触发告警。
+
+### 3σ 基线检测
+
+系统为每个源 IP 维护流量基线：
+
+1. 记录历史流量样本
+2. 计算均值 μ 和标准差 σ
+3. 当实时流量 > μ + kσ 时判定异常
+
+参数调优：
+- `sigma_multiplier = 3`：约 99.7% 正常流量在阈值内
+- 增大可减少误报，但可能漏报
+- 减小可提高检测灵敏度，但增加误报
+
+## 封禁管理
+
+### 查看封禁记录
 
 ```bash
 curl -H "Authorization: Bearer <token>" \
-  http://localhost:8080/api/v1/ddos/status
+  "http://localhost:8081/api/ban-records?source=anomaly"
 ```
 
 响应示例：
 
 ```json
 {
-  "code": 0,
-  "data": {
-    "enabled": true,
-    "current_pps": {
-      "total": 25000,
-      "syn": 15000,
-      "udp": 8000,
-      "icmp": 500,
-      "ack": 1500
-    },
-    "baseline": {
-      "total_mean": 12000,
-      "total_sigma": 3000,
-      "upper_threshold": 21000
-    },
-    "alerts": [
-      {
-        "type": "syn_flood",
-        "detected_at": "2025-01-01T12:00:00Z",
-        "current_pps": 15000,
-        "threshold_pps": 21000
-      }
-    ],
-    "auto_banned": 3
-  }
+  "records": [
+    {
+      "id": 1,
+      "ip": "192.168.1.100",
+      "source": "anomaly",
+      "reason": "SYN flood detected (ratio: 0.85, threshold: 0.5)",
+      "duration": 60,
+      "expired": false,
+      "created_at": "2026-03-28T10:00:00Z",
+      "expires_at": "2026-03-28T10:01:00Z"
+    }
+  ],
+  "total": 5
 }
 ```
 
-### 查看告警历史
+### 查看封禁统计
 
 ```bash
 curl -H "Authorization: Bearer <token>" \
-  "http://localhost:8080/api/v1/ddos/alerts?limit=20"
-```
-
-### 手动解除封禁
-
-```bash
-curl -X DELETE -H "Authorization: Bearer <token>" \
-  http://localhost:8080/api/v1/rules/{rule-id}
+  http://localhost:8081/api/ban-records/stats
 ```
 
 ## 最佳实践
 
 ::: tip 建议
-1. **先观察再开启自动封禁**：建议先手动运行检测系统，观察基线数据后再开启 `auto_ban`
-2. **合理设置阈值**：根据实际业务流量调整 `threshold`，避免误判
-3. **定期检查告警**：关注告警历史，及时发现攻击趋势
+1. **先观察后开启自动封禁**：建议先运行检测系统观察基线数据，确认阈值合理后再开启
+2. **合理设置阈值**：根据实际业务流量调整 `ratio_threshold`，避免误判
+3. **关注端口配置**：仅对业务端口开启检测，减少误报
 4. **配合 WAF 使用**：结合 WAF 联动实现 L3 + L7 双层防护
+5. **定期检查封禁记录**：关注封禁记录，及时发现异常
 :::
+
+### 调参建议
+
+#### 高流量场景
+
+```yaml
+anomaly_detection:
+  min_packets: 500
+  baseline:
+    min_threshold: 1000
+    sigma_multiplier: 3.5
+```
+
+#### 低流量场景
+
+```yaml
+anomaly_detection:
+  min_packets: 20
+  baseline:
+    min_threshold: 50
+    sigma_multiplier: 2.5
+```
+
+#### 严格模式
+
+```yaml
+anomaly_detection:
+  attacks:
+    syn_flood:
+      ratio_threshold: 0.3
+      block_duration: 300
+```
+
+#### 宽松模式
+
+```yaml
+anomaly_detection:
+  attacks:
+    syn_flood:
+      ratio_threshold: 0.7
+      block_duration: 30
+```

@@ -51,8 +51,11 @@ export default defineConfig({
           items: [
             { text: '架构概览', link: '/guide/architecture' },
             { text: 'API 参考', link: '/guide/api' },
+            { text: '认证授权', link: '/guide/auth' },
             { text: 'WAF 集成', link: '/guide/waf' },
             { text: '异常检测', link: '/guide/detection' },
+            { text: '阻断日志', link: '/guide/blocklog' },
+            { text: '数据源管理', link: '/guide/source' },
           ]
         }
       ]
