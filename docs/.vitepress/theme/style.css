@@ -767,8 +767,97 @@ html.dark {
   .VPHero::after {
     display: none;
   }
-  
+
   .VPFeature {
     animation: none;
   }
+}
+
+/* ============================================
+   Mermaid 图表样式 - 深色模式优化
+   ============================================ */
+
+.dark .mermaid {
+  /* 节点背景 */
+  --mermaid-node-bg: rgba(0, 245, 212, 0.08);
+  --mermaid-node-border: rgba(0, 245, 212, 0.3);
+  /* 节点文字 */
+  --mermaid-node-text: #e4e4e7;
+  /* 边框线 */
+  --mermaid-edge-color: rgba(0, 245, 212, 0.4);
+  /* 子图背景 */
+  --mermaid-subgraph-bg: rgba(0, 245, 212, 0.03);
+  --mermaid-subgraph-border: rgba(0, 245, 212, 0.15);
+}
+
+.dark .mermaid .node rect,
+.dark .mermaid .node circle,
+.dark .mermaid .node ellipse,
+.dark .mermaid .node polygon,
+.dark .mermaid .node path {
+  fill: rgba(0, 245, 212, 0.08) !important;
+  stroke: rgba(0, 245, 212, 0.3) !important;
+  stroke-width: 1px !important;
+}
+
+.dark .mermaid .node .label {
+  color: #e4e4e7 !important;
+  fill: #e4e4e7 !important;
+}
+
+.dark .mermaid .edgeLabel {
+  color: #a1a1aa !important;
+  background-color: #0a0a0f !important;
+}
+
+.dark .mermaid .edgePath .path {
+  stroke: rgba(0, 245, 212, 0.4) !important;
+  stroke-width: 1.5px !important;
+}
+
+.dark .mermaid .edgePath .marker path {
+  fill: rgba(0, 245, 212, 0.5) !important;
+  stroke: rgba(0, 245, 212, 0.5) !important;
+}
+
+.dark .mermaid .cluster rect {
+  fill: rgba(0, 245, 212, 0.03) !important;
+  stroke: rgba(0, 245, 212, 0.15) !important;
+  stroke-width: 1px !important;
+  rx: 8 !important;
+}
+
+.dark .mermaid .cluster-label {
+  color: #00f5d4 !important;
+  fill: #00f5d4 !important;
+}
+
+/* 浅色模式 Mermaid 样式 */
+html:not(.dark) .mermaid .node rect,
+html:not(.dark) .mermaid .node circle,
+html:not(.dark) .mermaid .node ellipse,
+html:not(.dark) .mermaid .node polygon,
+html:not(.dark) .mermaid .node path {
+  stroke: rgba(8, 145, 178, 0.3) !important;
+  stroke-width: 1px !important;
+}
+
+html:not(.dark) .mermaid .edgePath .path {
+  stroke: rgba(8, 145, 178, 0.4) !important;
+  stroke-width: 1.5px !important;
+}
+
+html:not(.dark) .mermaid .edgePath .marker path {
+  fill: rgba(8, 145, 178, 0.5) !important;
+  stroke: rgba(8, 145, 178, 0.5) !important;
+}
+
+html:not(.dark) .mermaid .cluster rect {
+  stroke: rgba(8, 145, 178, 0.15) !important;
+  rx: 8 !important;
+}
+
+html:not(.dark) .mermaid .cluster-label {
+  color: #0891b2 !important;
+  fill: #0891b2 !important;
 }
