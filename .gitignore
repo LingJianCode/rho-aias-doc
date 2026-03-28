@@ -5,3 +5,4 @@ dist
 *.local
 cache
 rho-aias
+vitepress
