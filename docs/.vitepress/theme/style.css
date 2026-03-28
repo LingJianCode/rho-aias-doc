@@ -286,40 +286,108 @@ html.dark {
   box-shadow: 0 4px 14px rgba(8, 145, 178, 0.2);
 }
 
-/* 扫描线效果 */
-.VPHero::after {
-  content: '';
+/* 彗星扫描线容器 */
+.hero-comet-container {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  animation: scanline 4s linear infinite;
+  bottom: 0;
   pointer-events: none;
   z-index: 2;
+  overflow: hidden;
 }
 
-.dark .VPHero::after {
-  background: linear-gradient(90deg,
-    transparent,
-    rgba(0, 245, 212, 0.5),
-    transparent
+/* 彗星扫描线 - 头在下，尾巴在上，80px 高度渐变 */
+.hero-comet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 80px;
+  pointer-events: none;
+  animation: comet-sweep 5s linear infinite;
+}
+
+/* 深色模式：底部亮，向上渐变透明 */
+.dark .hero-comet {
+  background: linear-gradient(to top,
+    rgba(0, 245, 212, 0.5) 0%,
+    rgba(0, 245, 212, 0.3) 20%,
+    rgba(0, 245, 212, 0.15) 40%,
+    rgba(0, 245, 212, 0.05) 70%,
+    transparent 100%
   );
 }
 
-:root:not(.dark) .VPHero::after {
-  background: linear-gradient(90deg,
-    transparent,
-    rgba(8, 145, 178, 0.4),
-    transparent
+/* 浅色模式 */
+:root:not(.dark) .hero-comet {
+  background: linear-gradient(to top,
+    rgba(8, 145, 178, 0.5) 0%,
+    rgba(8, 145, 178, 0.3) 20%,
+    rgba(8, 145, 178, 0.15) 40%,
+    rgba(8, 145, 178, 0.05) 70%,
+    transparent 100%
   );
 }
 
-@keyframes scanline {
-  0% { top: 0; opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
+@keyframes comet-sweep {
+  0% {
+    top: -80px;
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* 红色亮点效果 */
+.hero-spark {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: spark-flicker 1.2s ease-out forwards;
+}
+
+.dark .hero-spark {
+  background: #f15bb5;
+  box-shadow:
+    0 0 6px #f15bb5,
+    0 0 12px rgba(241, 91, 181, 0.6);
+}
+
+:root:not(.dark) .hero-spark {
+  background: #db2777;
+  box-shadow:
+    0 0 6px #db2777,
+    0 0 12px rgba(219, 39, 119, 0.5);
+}
+
+@keyframes spark-flicker {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
 }
 
 /* ============================================
@@ -763,8 +831,7 @@ html.dark {
    ============================================ */
 
 @media print {
-  .VPHero::before,
-  .VPHero::after {
+  .VPHero::before {
     display: none;
   }
 
