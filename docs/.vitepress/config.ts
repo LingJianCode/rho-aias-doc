@@ -4,6 +4,9 @@ export default defineConfig({
   title: 'rho-aias',
   description: '基于 eBPF/XDP 的高性能网络防火墙系统',
 
+  // 允许主题切换
+  appearance: true,
+
   vite: {
     server: {
       host: '0.0.0.0',
@@ -16,12 +19,16 @@ export default defineConfig({
 
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
-    ['meta', { name: 'theme-color', content: '#0f0f1a' }],
+    ['meta', { name: 'theme-color', content: '#0a0a0f' }],
     ['meta', { name: 'og:type', content: 'website' }],
     ['meta', { name: 'og:title', content: 'rho-aias' }],
     ['meta', { name: 'og:description', content: '基于 eBPF/XDP 的高性能网络防火墙系统' }],
     ['meta', { name: 'og:image', content: '/favicon.svg' }],
-    ['meta', { name: 'twitter:card', content: 'summary' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:site', content: '@rho-aias' }],
+    // Preconnect for Google Fonts
+    ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],
+    ['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
   ],
 
   themeConfig: {
@@ -72,7 +79,7 @@ export default defineConfig({
 
     footer: {
       message: '基于 eBPF/XDP 技术构建',
-      copyright: '© 2026 rho-aias Contributors'
+      copyright: `Copyright © 2026-${new Date().getFullYear()} 备案号：<a href="https://beian.miit.gov.cn/" target="_blank">****</a>`
     },
 
     search: {
