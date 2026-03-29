@@ -32,9 +32,6 @@ export default withMermaid({
     ['meta', { name: 'og:image', content: '/favicon.svg' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:site', content: '@rho-aias' }],
-    // Preconnect for Google Fonts
-    ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],
-    ['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
   ],
 
   themeConfig: {

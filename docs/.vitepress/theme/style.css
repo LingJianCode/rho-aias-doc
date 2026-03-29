@@ -2,8 +2,22 @@
    rho-aias Documentation - Cyberpunk Theme
    ============================================ */
 
-/* Google Fonts - 科技感字体 */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@400;500;600;700&display=swap');
+/* 本地化字体 - 科技感字体 */
+@font-face {
+  font-family: 'Orbitron';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/Orbitron-Variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/JetBrainsMono-Variable.woff2') format('woff2');
+}
 
 /* ============================================
    CSS Variables - 颜色系统

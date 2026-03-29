@@ -9,6 +9,10 @@
     "preview": "vitepress preview docs"
   },
   "devDependencies": {
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
+    "@fontsource-variable/orbitron": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/orbitron": "^5.2.8",
     "mermaid": "^11.13.0",
     "vitepress": "^1.6.3",
     "vitepress-plugin-mermaid": "^2.0.17",
