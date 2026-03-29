@@ -20,6 +20,20 @@ export default withMermaid({
       allowedHosts: [
         '.cnb.run'
       ]
+    },
+    build: {
+      // 使用 terser 获得更高压缩率
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+          pure_funcs: ['console.log', 'console.info', 'console.debug']
+        },
+        format: {
+          comments: false
+        }
+      }
     }
   },
 
