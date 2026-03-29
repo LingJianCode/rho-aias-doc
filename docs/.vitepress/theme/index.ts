@@ -64,7 +64,8 @@ function createSpark() {
   container.appendChild(spark)
 
   // 1.2秒后移除
-  setTimeout(() => spark.remove(), 1200)
+  const removeTimer = setTimeout(() => spark.remove(), 1200)
+  sparkTimers.push(removeTimer)
 }
 
 function initCometEffect() {
