@@ -52,47 +52,49 @@ anomaly_detection:
 
   # 检测配置
   check_interval: 1                 # 检测间隔（秒）
-  min_packets: 50                   # 最小包数（少于此值不检测）
+  min_packets: 200                  # 全局最小包数门槛（单 IP 每秒 <200 包直接跳过攻击检测）
   cleanup_interval: 300             # 清理过期数据间隔（秒）
 
   # 封禁配置
   block_duration: 60                # 临时封禁时长（秒）
 
-  # 端口过滤配置（仅对指定端口进行异常检测，为空则检测所有端口）
+  # 端口过滤配置（仅对指定端口进行异常检测，同时应用于 TCP/UDP，为空则检测所有端口）
   ports:
     - 80
     - 443
     - 8080
     - 53
 
-  # 3σ 基线配置
+  # 3σ 基线配置（兜底检测：协议比例正常但流量异常大的场景）
+  # 使用 Welford 在线算法更新均值/方差，阈值 = μ + k × σ
   baseline:
-    min_sample_count: 10            # 最小样本数
-    sigma_multiplier: 3.0           # σ 倍数（默认 3）
-    min_threshold: 100              # 最小 PPS 阈值
-    max_age: 1800                   # 基线最大年龄（秒）
+    min_sample_count: 60            # 最小学习样本数（60 秒），不足时仅学习不检测
+    sigma_multiplier: 4.0           # σ 倍数，4σ 覆盖 99.993%，平衡灵敏度与误报
+    min_threshold: 1000             # 最小 PPS 阈值，PPS <1000 的 IP 豁免基线检测
+    max_age: 3600                   # 基线最大有效期（秒），过期自动重置以适应流量变化
 
   # 攻击类型检测
+  # 封禁条件 = 全局 min_packets 通过 + 类型 min_packets 通过 + ratio_threshold 通过
   attacks:
     syn_flood:
       enabled: true
-      ratio_threshold: 0.5          # SYN 包占比阈值（50%）
-      min_packets: 100              # 触发检测的最小包数
+      ratio_threshold: 0.5          # SYN/TCP > 50% 才触发（正常流量远低于此值）
+      min_packets: 200              # TCP 包 ≥200 才检测
       block_duration: 60            # 封禁时长（秒）
     udp_flood:
       enabled: true
-      ratio_threshold: 0.8          # UDP 包占比阈值（80%）
-      min_packets: 100
+      ratio_threshold: 0.8          # UDP/总包 > 80% 才触发
+      min_packets: 200              # UDP 包 ≥200 才检测
       block_duration: 60
     icmp_flood:
       enabled: true
-      ratio_threshold: 0.5          # ICMP 包占比阈值（50%）
-      min_packets: 100
+      ratio_threshold: 0.5          # ICMP/总包 > 50% 才触发
+      min_packets: 50               # ICMP 包 ≥50 才检测（特征明显，可适当放宽）
       block_duration: 60
     ack_flood:
       enabled: true
-      ratio_threshold: 0.8          # ACK 包占比阈值（80%）
-      min_packets: 100
+      ratio_threshold: 0.9          # ACK/TCP > 90% 才触发（正常下载通常 <85%）
+      min_packets: 500              # TCP 包 ≥500 才检测（主要误触来源，必须抬高）
       block_duration: 60
 ```
 
@@ -102,19 +104,23 @@ anomaly_detection:
 |------|------|--------|
 | `sample_rate` | 采样率，1 表示 100% 采样 | `1` |
 | `check_interval` | 检测间隔（秒） | `1` |
-| `min_packets` | 最小包数阈值 | `50` |
+| `min_packets` | 全局最小包数门槛（单 IP 每秒 <200 包直接跳过攻击检测） | `200` |
 | `cleanup_interval` | 清理间隔（秒） | `300` |
 | `block_duration` | 临时封禁时长（秒） | `60` |
-| `ports` | 检测端口列表（空则全部） | `[]` |
+| `ports` | 检测端口列表（空则全部，同时应用于 TCP/UDP） | `[]` |
 
 ### 基线配置说明
 
 | 参数 | 说明 | 默认值 |
 |------|------|--------|
-| `min_sample_count` | 建立基线的最小样本数 | `10` |
+| `min_sample_count` | 建立基线的最小样本数（不足时仅学习不检测） | `10` |
 | `sigma_multiplier` | σ 倍数，越高越宽松 | `3.0` |
 | `min_threshold` | 最小 PPS 阈值，保护低流量 IP | `100` |
 | `max_age` | 基线最大年龄（秒），过期后重建 | `1800` |
+
+::: tip 推荐配置
+上方的配置示例使用了生产推荐的调优值（`min_packets: 200`、`min_sample_count: 60`、`sigma_multiplier: 4.0` 等），相比代码内置默认值更适合高流量环境。请根据实际业务场景进行调整。
+:::
 
 ### 攻击类型配置说明
 
@@ -209,7 +215,8 @@ curl -H "Authorization: Bearer <token>" \
 2. **合理设置阈值**：根据实际业务流量调整 `ratio_threshold`，避免误判
 3. **关注端口配置**：仅对业务端口开启检测，减少误报
 4. **配合 WAF 使用**：结合 WAF 联动实现 L3 + L7 双层防护
-5. **定期检查封禁记录**：关注封禁记录，及时发现异常
+5. **启用 SSH 防爆破**：开启 [FailGuard](/guide/failguard) 保护 SSH 服务免受暴力破解
+6. **定期检查封禁记录**：关注封禁记录，及时发现异常
 :::
 
 ### 调参建议

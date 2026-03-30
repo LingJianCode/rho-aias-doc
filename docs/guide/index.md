@@ -27,9 +27,10 @@ XDP（eXpress Data Path）是 Linux 内核提供的高性能数据包处理框�
 | 功能模块 | 说明 |
 |---------|------|
 | XDP 包过滤 | eBPF 内核程序，L3 层精确匹配和 CIDR 范围匹配 |
-| 多源规则管理 | 手动规则 + 威胁情报 + GeoIP + WAF 联动 + 异常检测 |
+| 多源规则管理 | 手动规则 + 威胁情报 + GeoIP + WAF 联动 + 异常检测 + SSH 防爆破 |
 | WAF 联动 | 监控 Coraza WAF 日志，自动封禁恶意 IP |
 | DDoS 检测 | 3σ 统计基线 + 攻击类型识别 + 自动响应 |
+| SSH 防爆破 | 监控 SSH 认证日志，滑动窗口计数 + 自动封禁（参考 fail2ban） |
 | 地域封禁 | MaxMind GeoIP 数据库，支持白名单/黑名单模式 |
 | 阻断日志 | 实时记录拦截事件，支持统计分析和持久化 |
 | 认证授权 | JWT/API Key/Casbin RBAC，细粒度权限控制 |
@@ -46,6 +47,7 @@ graph TB
         Rule["规则引擎"]
         WAF["WAF 联动"]
         DDoS["DDoS 检测"]
+        FailGuard["SSH 防爆破"]
         Auth["认证授权"]
         Sync["eBPF 规则同步"]
     end
@@ -54,8 +56,8 @@ graph TB
         XDP["XDP eBPF Program<br/>L3 包过滤 / 白名单 / 黑名单 / 统计计数"]
     end
 
-    User --> Rule & WAF & DDoS & Auth
-    Rule & WAF & DDoS & Auth --> Sync
+    User --> Rule & WAF & DDoS & FailGuard & Auth
+    Rule & WAF & DDoS & FailGuard & Auth --> Sync
     Sync --> XDP
 ```
 
@@ -65,12 +67,15 @@ rho-aias 支持多种规则来源，通过位掩码实现多源聚合：
 
 | 来源 | 说明 | 位掩码 |
 |------|------|--------|
-| 手动规则 | 通过 API 手动添加的 IP/CIDR 规则 | `0x01` |
-| IPSum | 第三方威胁情报源（~23万条规则） | `0x02` |
+| IPSum | 第三方威胁情报源（~23万条规则） | `0x01` |
 | Spamhaus DROP | 国际知名垃圾邮件黑名单 | `0x02` |
-| Geo-Blocking | 基于国家/地区的地域封禁 | `0x04` |
+| 手动规则 | 通过 API 手动添加的 IP/CIDR 规则 | `0x04` |
 | WAF 自动封禁 | 监控 WAF 审计日志自动封禁 IP | `0x08` |
 | DDoS 防护 | 异常流量检测自动封禁 | `0x10` |
+| 频率限制 | Rate Limit 日志触发封禁 | `0x20` |
+| 异常检测 | 3σ 基线 + 攻击类型检测封禁 | `0x40` |
+| IP 白名单 | 全局白名单，直接放行 | `0x80` |
+| SSH 防爆破 | FailGuard SSH 暴力破解防护 | `0x100` |
 
 当同一 IP 被多个来源标记时，位掩码会合并；删除时会检查是否还有其他来源，避免误删。
 

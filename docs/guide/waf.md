@@ -66,6 +66,7 @@ waf:
   waf_log_path: /caddy-logs/waf_audit.log      # WAF 审计日志
   rate_limit_log_path: /caddy-logs/rate_limit.log  # Rate Limit 日志
   ban_duration: 3600                            # 封禁时长（秒）
+  offset_state_file: ./data/waf_offset.json     # 偏移量持久化文件路径
 ```
 
 ### 3. Docker Compose 配置
@@ -117,6 +118,7 @@ services:
 | `waf_log_path` | WAF 审计日志路径 | `/logs/waf_audit.log` |
 | `rate_limit_log_path` | Rate Limit 日志路径 | `/logs/rate_limit.log` |
 | `ban_duration` | 封禁时长（秒） | `3600` |
+| `offset_state_file` | 偏移量持久化文件路径 | `./data/waf_offset.json` |
 
 ---
 

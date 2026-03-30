@@ -89,13 +89,28 @@ waf:
   waf_log_path: /caddy-logs/waf_audit.log
   rate_limit_log_path: /caddy-logs/rate_limit.log
   ban_duration: 3600            # 封禁时长（秒）
+  offset_state_file: ./data/waf_offset.json  # 偏移量持久化文件路径
+
+# SSH 防爆破配置（参考 fail2ban 核心功能）
+failguard:
+  enabled: true
+  log_path: /var/log/auth.log     # 监控的日志文件路径
+  offset_state_file: ./data/failguard_offset.json  # 偏移量持久化文件路径
+  mode: normal                    # 检测模式: normal/ddos/aggressive
+  max_retry: 5                    # 触发封禁的失败次数阈值
+  find_time: 600                  # 滑动窗口时长（秒）
+  ban_duration: 3600              # 封禁时长（秒）
+  ignore_ips:                     # 白名单 IP/CIDR
+    # - "10.0.0.0/8"
+  # fail_regex:                    # 自定义失败匹配正则（留空使用内置规则）
+  # ignore_regex:                  # 自定义忽略匹配正则（留空使用内置规则）
 
 # 异常检测配置
 anomaly_detection:
   enabled: true
   sample_rate: 1                # 采样率（1 表示 100%）
   check_interval: 1             # 检测间隔（秒）
-  min_packets: 50               # 最小包数
+  min_packets: 200              # 全局最小包数门槛
   cleanup_interval: 300         # 清理间隔（秒）
   block_duration: 60            # 临时封禁时长（秒）
   ports:                        # 检测端口（为空则全部）
@@ -104,30 +119,30 @@ anomaly_detection:
     - 8080
     - 53
   baseline:
-    min_sample_count: 10
-    sigma_multiplier: 3.0
-    min_threshold: 100
-    max_age: 1800
+    min_sample_count: 60
+    sigma_multiplier: 4.0
+    min_threshold: 1000
+    max_age: 3600
   attacks:
     syn_flood:
       enabled: true
       ratio_threshold: 0.5      # SYN 包占比阈值
-      min_packets: 100
+      min_packets: 200
       block_duration: 60
     udp_flood:
       enabled: true
       ratio_threshold: 0.8
-      min_packets: 100
+      min_packets: 200
       block_duration: 60
     icmp_flood:
       enabled: true
       ratio_threshold: 0.5
-      min_packets: 100
+      min_packets: 50
       block_duration: 60
     ack_flood:
       enabled: true
-      ratio_threshold: 0.8
-      min_packets: 100
+      ratio_threshold: 0.9
+      min_packets: 500
       block_duration: 60
 ```
 
@@ -256,6 +271,24 @@ auth:
 | `waf_log_path` | string | /logs/waf_audit.log | WAF 审计日志路径 |
 | `rate_limit_log_path` | string | /logs/rate_limit.log | Rate Limit 日志路径 |
 | `ban_duration` | int | 3600 | 封禁时长（秒） |
+| `offset_state_file` | string | ./data/waf_offset.json | 偏移量持久化文件路径 |
+
+### SSH 防爆破配置 (failguard)
+
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `enabled` | bool | false | 是否启用 FailGuard |
+| `log_path` | string | /var/log/auth.log | SSH 认证日志文件路径 |
+| `offset_state_file` | string | ./data/failguard_offset.json | 偏移量持久化文件路径 |
+| `mode` | string | normal | 检测模式：`normal`、`ddos`、`aggressive` |
+| `max_retry` | int | 5 | 滑动窗口内触发封禁的失败次数阈值 |
+| `find_time` | int | 600 | 滑动窗口时长（秒） |
+| `ban_duration` | int | 3600 | 封禁时长（秒） |
+| `ignore_ips` | []string | [] | 白名单 IP/CIDR 列表 |
+| `fail_regex` | []string | - | 自定义失败匹配正则（留空按 mode 使用内置规则） |
+| `ignore_regex` | []string | - | 自定义忽略匹配正则（留空使用内置默认） |
+
+详见 [SSH 防爆破](/guide/failguard)。
 
 ### 异常检测配置 (anomaly_detection)
 
@@ -264,10 +297,10 @@ auth:
 | `enabled` | bool | false | 是否启用异常检测 |
 | `sample_rate` | int | 1 | 采样率（1=100%，100=1%） |
 | `check_interval` | int | 1 | 检测间隔（秒） |
-| `min_packets` | int | 50 | 最小包数阈值 |
+| `min_packets` | int | 200 | 全局最小包数门槛（单 IP 每秒 <200 包直接跳过攻击检测） |
 | `cleanup_interval` | int | 300 | 清理过期数据间隔（秒） |
 | `block_duration` | int | 60 | 临时封禁时长（秒） |
-| `ports` | []int | - | 检测端口列表（为空则检测所有端口） |
+| `ports` | []int | - | 检测端口列表（为空则检测所有端口，同时应用于 TCP/UDP） |
 
 #### 3σ 基线配置 (anomaly_detection.baseline)
 
@@ -321,11 +354,15 @@ rho-aias 使用位掩码标记规则来源，支持多源聚合：
 
 | 来源 | 位掩码 | 说明 |
 |------|--------|------|
-| 手动规则 | `0x01` | 通过 API 手动添加 |
-| 威胁情报 | `0x02` | IPSum、Spamhaus 等 |
-| 地域封禁 | `0x04` | GeoIP 黑名单 |
+| IPSum | `0x01` | IPSum 威胁情报 |
+| Spamhaus | `0x02` | Spamhaus 威胁情报 |
+| 手动规则 | `0x04` | 通过 API 手动添加 |
 | WAF 联动 | `0x08` | WAF 自动封禁 |
-| 异常检测 | `0x10` | DDoS 检测自动封禁 |
+| DDoS 防护 | `0x10` | DDoS 检测自动封禁 |
+| 频率限制 | `0x20` | Rate Limit 封禁 |
+| 异常检测 | `0x40` | 3σ 基线 + 攻击类型检测封禁 |
+| IP 白名单 | `0x80` | 全局白名单，直接放行 |
+| SSH 防爆破 | `0x100` | FailGuard SSH 暴力破解防护 |
 
 当同一 IP 被多个来源标记时，位掩码会合并，删除时会检查是否还有其他来源。
 

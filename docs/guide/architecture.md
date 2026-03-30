@@ -85,7 +85,7 @@ flowchart TB
 管理所有防火墙规则的完整生命周期：
 
 - 规则的 CRUD 操作
-- 多源规则聚合（手动、威胁情报、GeoIP、WAF、异常检测）
+- 多源规则聚合（手动、威胁情报、WAF、异常检测、SSH 防爆破）
 - 规则冲突检测和位掩码管理
 - 规则过期清理
 
@@ -97,6 +97,7 @@ flowchart TB
 - **API Key**：服务间调用的简化认证
 - **验证码**：防暴力破解
 - **RBAC**：基于角色的访问控制
+- **SSH 防爆破**：监控 SSH 认证日志，自动封禁暴力破解 IP
 
 ---
 
@@ -109,8 +110,8 @@ flowchart TB
 | `allow_ips` | `BPF_MAP_TYPE_HASH` | IP 地址 | - | 白名单 IP 列表 |
 | `allow_cidrs` | `BPF_MAP_TYPE_LPM_TRIE` | CIDR 前缀 | - | 白名单 CIDR 列表 |
 | `stats` | `BPF_MAP_TYPE_PERCPU_ARRAY` | 索引 | 计数器 | 包计数统计 |
-| `config` | `BPF_MAP_TYPE_ARRAY` | 索引 | 配置值 | 运行时配置 |
-| `anomaly_config` | `BPF_MAP_TYPE_ARRAY` | 索引 | 配置值 | 异常检测配置 |
+| `config` | `BPF_MAP_TYPE_ARRAY` | 索引 | 配置值 | 运行时配置（含 GeoBlocking） |
+| `anomaly_config` | `BPF_MAP_TYPE_ARRAY` | 索引 | 配置值 | 异常检测采样配置 |
 
 ---
 
@@ -129,6 +130,7 @@ graph TB
         IntelMgr["Intel Manager"]
         GeoMgr["GeoBlocking Manager"]
         WAFMon["WAF Monitor"]
+        FailGuard["FailGuard<br/>SSH 防爆破"]
         Anomaly["Anomaly Detector<br/>异常检测"]
         XDPMgr["XDP Manager<br/>规则同步"]
         BlockLog["BlockLog<br/>阻断日志"]
@@ -143,6 +145,7 @@ graph TB
     IntelMgr --> BlockLog
     GeoMgr --> XDPMgr
     WAFMon --> XDPMgr
+    FailGuard --> XDPMgr
     Anomaly --> BlockLog
     XDPMgr --> BlockLog
     BlockLog --> DB
@@ -154,16 +157,18 @@ graph TB
 
 ```
 ./data/
-├── auth.db              # 认证数据库（用户、API Key、审计日志）
+├── auth.db              # 认证数据库（用户、API Key、审计日志、封禁记录）
 ├── intel/               # 威胁情报缓存
 │   ├── ipsum.json
 │   └── spamhaus.json
 ├── geo/                 # GeoIP 缓存
 │   ├── maxmind.json
 │   └── GeoLite2-Country.mmdb
-└── manual/              # 手动规则缓存
-    ├── rules.json       # 黑名单规则
-    └── whitelist.json   # 白名单规则
+├── manual/              # 手动规则缓存
+│   ├── rules.json       # 黑名单规则
+│   └── whitelist.json   # 白名单规则
+├── waf_offset.json      # WAF 日志偏移量持久化
+└── failguard_offset.json # FailGuard 日志偏移量持久化
 
 ./logs/
 ├── rho-aias.log         # 主日志
