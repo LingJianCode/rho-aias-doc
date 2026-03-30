@@ -2,6 +2,7 @@ import DefaultTheme from 'vitepress/theme'
 import { onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vitepress'
 import './style.css'
+import mermaid from 'mermaid'
 
 // Hero 区域彗星扫描线和红色亮点效果
 let initialized = false
@@ -82,12 +83,26 @@ export default {
 
     onMounted(() => {
       // 使用 nextTick 确保 Vue 渲染完成后再初始化
-      nextTick(() => initCometEffect())
+      nextTick(() => {
+        initCometEffect()
+        // 按需初始化 mermaid，仅在页面内包含 Mermaid 图表时加载
+        if (document.querySelector('.mermaid')) {
+          mermaid.initialize({ startOnLoad: true, theme: 'default' })
+          mermaid.run()
+        }
+      })
     })
 
     // 监听路由变化，SPA 导航时重新初始化
     watch(() => route.path, () => {
-      nextTick(() => initCometEffect())
+      nextTick(() => {
+        initCometEffect()
+        // 路由切换时按需初始化 mermaid
+        if (document.querySelector('.mermaid')) {
+          mermaid.initialize({ startOnLoad: true, theme: 'default' })
+          mermaid.run()
+        }
+      })
     })
 
     // 组件卸载时清理资源

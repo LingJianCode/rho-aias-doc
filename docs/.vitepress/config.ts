@@ -9,7 +9,7 @@ export default withMermaid({
 
   // Mermaid 配置
   mermaid: {
-    startOnLoad: true,
+    startOnLoad: false,
     theme: 'default'
   },
 
@@ -22,18 +22,11 @@ export default withMermaid({
       ]
     },
     build: {
-      // 使用 terser 获得更高压缩率
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: true,
-          drop_debugger: true,
-          pure_funcs: ['console.log', 'console.info', 'console.debug']
-        },
-        format: {
-          comments: false
-        }
-      }
+      minify: 'esbuild'
+    },
+    esbuild: {
+      drop: ['console', 'debugger'],
+      legalComments: 'none'
     }
   },
 
