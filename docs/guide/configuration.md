@@ -277,7 +277,7 @@ auth:
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `enabled` | bool | false | 是否启用 FailGuard |
+| `enabled` | bool | true | 是否启用 FailGuard |
 | `log_path` | string | /var/log/auth.log | SSH 认证日志文件路径 |
 | `offset_state_file` | string | ./data/failguard_offset.json | 偏移量持久化文件路径 |
 | `mode` | string | normal | 检测模式：`normal`、`ddos`、`aggressive` |

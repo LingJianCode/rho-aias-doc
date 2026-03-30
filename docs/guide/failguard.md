@@ -26,7 +26,7 @@ flowchart TB
     subgraph Ban["封禁执行"]
         K --> L["白名单二次检查"]
         L -->|白名单| M["跳过"]
-        L -->|非白名单| N["XDP 添加封禁规则<br/>sourceMask = 0x100"]
+        L -->|非白名单| N["XDP 添加封禁规则<br/>sourceMask = 0x80"]
         N --> O["写入封禁记录到数据库"]
         O --> P["清零失败计数器"]
     end
@@ -107,7 +107,7 @@ failguard:
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `enabled` | bool | false | 是否启用 FailGuard |
+| `enabled` | bool | true | 是否启用 FailGuard |
 | `log_path` | string | `/var/log/auth.log` | SSH 认证日志文件路径 |
 | `offset_state_file` | string | `./data/failguard_offset.json` | 偏移量持久化文件路径 |
 | `mode` | string | `normal` | 检测模式：`normal`、`ddos`、`aggressive` |
@@ -135,7 +135,7 @@ FailGuard 通过文件的 **inode** 检测日志轮转：
 ## 封禁生命周期
 
 ```
-SSH 失败认证 → 达到阈值 → XDP 内核层封禁（sourceMask 0x100）
+SSH 失败认证 → 达到阈值 → XDP 内核层封禁（sourceMask 0x80）
                                     ↓
                     实际封禁时长 = ban_duration + 最多 5 分钟清理延迟
                                     ↓
@@ -169,10 +169,10 @@ curl -H "Authorization: Bearer <token>" \
 
 ### 位掩码
 
-FailGuard 使用专用位掩码 `0x100`（Bit 8）标记来源，不与其他模块冲突：
+FailGuard 使用专用位掩码 `0x80`（Bit 7）标记来源，不与其他模块冲突：
 
 ```
-source_mask = 0x100 (仅 FailGuard)
+source_mask = 0x80 (仅 FailGuard)
 ```
 
 解除封禁时仅移除 FailGuard 位，如果该 IP 还被其他来源封禁则保留规则。
