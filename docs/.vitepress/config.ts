@@ -1,8 +1,16 @@
 import { withMermaid } from 'vitepress-plugin-mermaid'
 
 export default withMermaid({
+  // 站点语言
+  lang: 'zh-CN',
+
   title: 'rho-aias - 基于eBPF/XDP的高性能网络防火墙',
   description: 'rho-aias 是基于 eBPF/XDP 技术构建的高性能网络防火墙系统，支持 XDP 包过滤、DDoS 异常检测、WAF 联动、SSH 防爆破、地域封禁等功能，适用于企业级网络安全防护场景。',
+
+  // 生成 sitemap.xml
+  sitemap: {
+    hostname: 'https://www.rho-aias.site'
+  },
 
   // 允许主题切换,默认深色模式
   appearance: 'dark',
@@ -42,9 +50,8 @@ export default withMermaid({
     ['meta', { name: 'og:image', content: '/favicon.svg' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:site', content: '@rho-aias' }],
-    // TODO: 部署后替换为实际域名
-    // ['link', { rel: 'canonical', href: 'https://your-domain.com' }],
-    // ['meta', { name: 'og:url', content: 'https://your-domain.com' }],
+    ['link', { rel: 'canonical', href: 'https://www.rho-aias.site' }],
+    ['meta', { name: 'og:url', content: 'https://www.rho-aias.site' }],
     ['script', { type: 'application/ld+json' }, JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'SoftwareSourceCode',
