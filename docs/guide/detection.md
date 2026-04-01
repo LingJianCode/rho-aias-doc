@@ -1,3 +1,8 @@
+---
+title: DDoS 异常检测
+description: rho-aias DDoS 异常检测系统：基于 3σ 统计基线自动识别 SYN/UDP/ICMP/ACK Flood 等攻击流量，支持实时告警与自动封禁。
+---
+
 # 异常检测
 
 rho-aias 内置了基于统计基线的异常流量检测系统，能够自动识别 DDoS 攻击并触发响应措施。

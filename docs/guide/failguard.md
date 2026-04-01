@@ -1,3 +1,8 @@
+---
+title: SSH 防爆破 (FailGuard)
+description: rho-aias FailGuard SSH 防暴力破解模块：参考 fail2ban 设计，通过监控 SSH 认证日志和滑动窗口计数自动封禁恶意 IP。
+---
+
 # SSH 防爆破 (FailGuard)
 
 FailGuard 是 rho-aias 内置的 SSH 防暴力破解模块，参考 [fail2ban](https://www.fail2ban.org/) 的核心设计理念，通过监控 SSH 认证日志自动检测并封禁暴力破解来源 IP。

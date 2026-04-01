@@ -1,3 +1,8 @@
+---
+title: 数据源管理
+description: rho-aias 数据源管理：统一管理威胁情报订阅（IPSum/Spamhaus）、MaxMind GeoIP 地域数据库，支持定时自动更新和本地缓存。
+---
+
 # 数据源管理
 
 rho-aias 支持多种规则来源，包括威胁情报订阅、地域封禁数据库等，通过统一的接口管理所有数据源。

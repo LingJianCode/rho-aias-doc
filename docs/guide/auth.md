@@ -1,3 +1,8 @@
+---
+title: 认证授权
+description: rho-aias 认证授权体系：支持 JWT Token、API Key 和 Casbin RBAC 三种认证方式，实现细粒度的 API 权限控制。
+---
+
 # 认证授权
 
 rho-aias 内置了完整的认证授权体系，支持 JWT Token、API Key 和 Casbin RBAC 权限控制。

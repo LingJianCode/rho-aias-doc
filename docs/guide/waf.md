@@ -1,3 +1,8 @@
+---
+title: WAF 集成
+description: rho-aias 与 Caddy + Coraza WAF 联动集成：自动监控 WAF 审计日志，提取恶意 IP 并联动 XDP 防火墙进行封禁。
+---
+
 # WAF 集成
 
 rho-aias 可以与 Caddy + Coraza WAF 联动，通过监控 WAF 日志自动识别恶意 IP 并将其加入防火墙封禁列表。

@@ -1,3 +1,8 @@
+---
+title: API 参考
+description: rho-aias RESTful API 文档：涵盖认证、规则管理、状态查询、DDoS 防护、SSH 防爆破和阻断日志等全部 API 接口说明。
+---
+
 # API 参考
 
 rho-aias 提供完整的 RESTful API 接口用于规则管理、状态查询和系统配置。

@@ -1,8 +1,8 @@
 import { withMermaid } from 'vitepress-plugin-mermaid'
 
 export default withMermaid({
-  title: 'rho-aias',
-  description: '基于 eBPF/XDP 的高性能网络防火墙系统',
+  title: 'rho-aias - 基于eBPF/XDP的高性能网络防火墙',
+  description: 'rho-aias 是基于 eBPF/XDP 技术构建的高性能网络防火墙系统，支持 XDP 包过滤、DDoS 异常检测、WAF 联动、SSH 防爆破、地域封禁等功能，适用于企业级网络安全防护场景。',
 
   // 允许主题切换,默认深色模式
   appearance: 'dark',
@@ -33,12 +33,27 @@ export default withMermaid({
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     ['meta', { name: 'theme-color', content: '#0a0a0f' }],
+    ['meta', { name: 'keywords', content: 'eBPF防火墙, XDP网络防护, DDoS检测, 高性能防火墙, WAF集成, SSH防爆破, 地域封禁, 网络安全, rho-aias' }],
+    ['meta', { name: 'robots', content: 'index, follow' }],
     ['meta', { name: 'og:type', content: 'website' }],
-    ['meta', { name: 'og:title', content: 'rho-aias' }],
-    ['meta', { name: 'og:description', content: '基于 eBPF/XDP 的高性能网络防火墙系统' }],
+    ['meta', { name: 'og:site_name', content: 'rho-aias' }],
+    ['meta', { name: 'og:title', content: 'rho-aias - 基于eBPF/XDP的高性能网络防火墙' }],
+    ['meta', { name: 'og:description', content: 'rho-aias 是基于 eBPF/XDP 技术构建的高性能网络防火墙系统，支持 XDP 包过滤、DDoS 异常检测、WAF 联动、SSH 防爆破、地域封禁等功能，适用于企业级网络安全防护场景。' }],
     ['meta', { name: 'og:image', content: '/favicon.svg' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:site', content: '@rho-aias' }],
+    // TODO: 部署后替换为实际域名
+    // ['link', { rel: 'canonical', href: 'https://your-domain.com' }],
+    // ['meta', { name: 'og:url', content: 'https://your-domain.com' }],
+    ['script', { type: 'application/ld+json' }, JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareSourceCode',
+      'name': 'rho-aias',
+      'description': '基于 eBPF/XDP 技术构建的高性能网络防火墙系统',
+      'programmingLanguage': 'Go',
+      'license': 'https://spdx.org/licenses/MIT.html',
+      'codeRepository': 'https://cnb.cool/MakeCNBGreatAgain/rho-aias.git',
+    })],
   ],
 
   themeConfig: {

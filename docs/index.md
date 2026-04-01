@@ -1,5 +1,7 @@
 ---
 layout: home
+title: rho-aias - 基于eBPF/XDP的高性能网络防火墙
+description: rho-aias 是基于 eBPF/XDP 技术的高性能网络防火墙，在网络驱动层拦截数据包，支持 DDoS 检测、WAF 联动、SSH 防爆破和地域封禁，性能远超传统 iptables。
 
 hero:
   name: rho-aias

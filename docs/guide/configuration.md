@@ -1,3 +1,8 @@
+---
+title: 配置说明
+description: rho-aias 完整配置参考：详解 eBPF/XDP 模式、WAF 联动、DDoS 检测、SSH 防爆破、地域封禁等模块的 YAML 配置参数。
+---
+
 # 配置说明
 
 rho-aias 的所有配置通过 YAML 文件管理，默认配置文件为 `config.yml`。

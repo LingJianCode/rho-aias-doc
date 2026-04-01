@@ -1,3 +1,8 @@
+---
+title: rho-aias 简介
+description: 了解 rho-aias 的核心优势、功能模块、技术架构和适用场景。基于 eBPF/XDP 实现高性能 L3 层网络包过滤，支持多源规则聚合与威胁情报集成。
+---
+
 # 简介
 
 ## 什么是 rho-aias？
