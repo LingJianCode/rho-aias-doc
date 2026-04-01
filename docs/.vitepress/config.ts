@@ -65,6 +65,7 @@ export default withMermaid({
 
   themeConfig: {
     logo: '/favicon.svg',
+    siteTitle: 'rho-aias',
 
     nav: [
       { text: 'Home', link: '/' },
