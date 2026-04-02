@@ -37,71 +37,24 @@ bpftool feature probe | grep xdp
 
 ```bash
 git clone https://cnb.cool/MakeCNBGreatAgain/rho-aias.git
-cd rho-aias
 ```
 
-2. **创建配置文件**
+2. **使用默认配置启动**
 
-```bash
-# 直接编辑 config.yml
-```
-
-最小配置示例：
-
-```yaml
-server:
-  port: 8081
-
-ebpf:
-  interface_name: eth0      # 修改为你的网卡名称
-
-log:
-  level: info
-  format: console
-  output_dir: ./logs
-```
-
-3. **启动服务**
+> 注意⚠️：需要检查本机网卡的名称，并修改 `config.yml` 中的 `ens33` 为实际网卡名称。
 
 ```bash
 docker compose up -d
-
-# 查看日志
-docker compose logs -f rho-aias
 ```
 
-### 方式二：从源码构建
-
-1. **安装依赖**
+3. **测试**
 
 ```bash
-# 设置 Go 代理
-go env -w GO111MODULE=on
-go env -w GOPROXY=https://goproxy.cn,direct
+root@debian:~# curl localhost
+您的IP地址是: 127.0.0.1
 
-# 安装 eBPF 开发工具
-apt update
-apt install bpftool libbpf-dev llvm clang libelf-dev gcc-multilib build-essential
-```
-
-2. **克隆并编译**
-
-```bash
-git clone https://cnb.cool/MakeCNBGreatAgain/rho-aias.git
-cd rho-aias
-
-# 编译
-go build -o rho-aias .
-
-# 或使用 Docker 构建
-docker compose -f docker-compose-build-run.yml up -d --build
-```
-
-3. **运行**
-
-```bash
-# 需要 root 或 CAP_BPF 权限
-sudo ./rho-aias --config config.yml
+root@debian:~# curl localhost/.svn
+403 Forbidden
 ```
 
 ---
@@ -170,29 +123,6 @@ export JWT_SECRET="your-strong-secret-key-at-least-32-characters"
 ```bash
 docker compose restart rho-aias
 ```
-
-### 4. 登录获取 Token
-
-```bash
-# 获取验证码
-curl http://localhost:8081/api/auth/captcha
-
-# 登录（默认账户：admin / admin123）
-curl -X POST http://localhost:8081/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "admin",
-    "password": "admin123",
-    "captcha_id": "<captcha_id>",
-    "captcha_answer": "<answer>"
-  }'
-```
-
-::: danger 安全警告
-首次登录后请立即修改默认密码！
-:::
-
----
 
 ## 启用威胁情报
 
@@ -318,17 +248,6 @@ ip link show
 # 修改 config.yml 中的 interface_name
 ```
 
-### 认证失败
-
-```
-{"error": "invalid captcha"}
-```
-
-**解决方案**：
-- 确保验证码在有效期内（默认 5 分钟）
-- 检查验证码 ID 和答案是否匹配
-
----
 
 ## 下一步
 
