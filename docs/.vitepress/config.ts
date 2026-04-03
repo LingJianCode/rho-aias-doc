@@ -1,6 +1,9 @@
 import { withMermaid } from 'vitepress-plugin-mermaid'
 
+const base = "/rho-aias-doc/"; 
+
 export default withMermaid({
+  base,
   // 站点语言
   lang: 'zh-CN',
 
