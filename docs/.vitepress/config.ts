@@ -116,7 +116,7 @@ export default withMermaid({
 
     footer: {
       message: '基于 vitepress 技术构建',
-      copyright: `Copyright © 2026-${new Date().getFullYear()} 备案号：<a href="https://beian.miit.gov.cn/" target="_blank">蜀ICP备2026014678号-1</a>`
+      copyright: `Copyright © 2026-${new Date().getFullYear()}`
     },
 
     search: {
