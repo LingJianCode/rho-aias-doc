@@ -12,8 +12,11 @@ hero:
       text: Get Started
       link: /guide/
     - theme: alt
+      text: GitHub
+      link: https://github.com/LingJianCode/rho-aias
+    - theme: alt
       text: CNB
-      link: https://cnb.cool/MakeCNBGreatAgain/rho-aias.git
+      link: https://cnb.cool/MakeCNBGreatAgain/rho-aias
 
 features:
   - icon: 🛡️
